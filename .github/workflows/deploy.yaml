@@ -11,7 +11,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,6 @@ jobs:
         run: npm ci
         working-directory: infrastructure
 
-      - name: Diff
+      - name: Deploy
         run: npx cdk deploy
         working-directory: infrastructure
