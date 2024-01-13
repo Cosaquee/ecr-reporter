@@ -6,10 +6,17 @@ export class EcrReporterStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const ecrRepo = new cdk.CfnResource(this, 'EcrRepo', {
+    new cdk.CfnResource(this, 'debian', {
       type: 'AWS::ECR::Repository',
       properties: {
-        RepositoryName: 'ecr-reporter'
+        RepositoryName: 'debian'
+      }
+    });
+
+     new cdk.CfnResource(this, 'ubuntu', {
+      type: 'AWS::ECR::Repository',
+      properties: {
+        RepositoryName: 'ubuntu'
       }
     });
   }
