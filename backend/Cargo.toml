@@ -1,0 +1,9 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aws-sdk-ecr = "1.10.0"
+aws-config = { version = "1.1.2", features = ["behavior-version-latest"] }
+tokio = { version = "1.35.1", features = ["full"] }
