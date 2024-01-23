@@ -1,29 +1,61 @@
-use aws_sdk_ecr as ecr;
+use aws_config::meta::region::RegionProviderChain;
+use aws_sdk_ecr::{config::Region, meta::PKG_VERSION, Error};
+use aws_sdk_ecr::types::Repository;
 
-#[::tokio::main]
-async fn main() -> Result<(), ecr::Error> {
-    let config = aws_config::load_from_env().await;
-    let client = aws_sdk_ecr::Client::new(&config);
+async fn show_images(
+    client: &aws_sdk_ecr::Client,
+    repository: &str,
+) -> Result<(), aws_sdk_ecr::Error> {
+    let rsp = client
+        .list_images()
+        .repository_name(repository)
+        .send()
+        .await?;
 
-    // ... make some calls with the client
+    let images = rsp.image_ids();
+
+    println!("found {} images", images.len());
+
+    for image in images {
+        println!(
+            "image: {}:{}",
+            image.image_tag().unwrap(),
+            image.image_digest().unwrap()
+        );
+    }
 
     Ok(())
 }
 
-async fn list_findings() -> Result<(), Box<dyn Error>> {
-    let region_provider = Region::new("eu-west-1"); // replace with your region
+async fn describe_repositories(client: &aws_sdk_ecr::Client) -> Result<Vec::<Repository>, aws_sdk_ecr::Error> {
+    let rsp = client.describe_repositories().send().await?;
+    let repositories = rsp.repositories().to_vec();
+
+    Ok(repositories)
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    let region = "eu-west-1";
+    let region_provider = RegionProviderChain::first_try(Region::new("eu-west-1"))
+        .or_default_provider()
+        .or_else(Region::new("eu-west-1"));
+
+    println!();
+    println!("ECR client version: {}", PKG_VERSION);
+    println!(
+        "Region:             {}",
+        region_provider.region().await.unwrap().as_ref()
+    );
+    println!();
+
     let shared_config = aws_config::from_env().region(region_provider).load().await;
-    let client = Client::new(&shared_config);
+    let client = aws_sdk_ecr::Client::new(&shared_config);
 
-    // Example: Listing repositories (you might have specific repository names)
-    let resp = client.describe_repositories().send().await?;
-    for repo in resp.repositories().unwrap_or_default() {
-        let repo_name = repo.repository_name.as_deref().unwrap_or_default();
+    let repos = describe_repositories(&client).await?;
 
-        // Here you would typically list images in the repository
-        // and then describe image scan findings
-        // This is a placeholder for the actual calls you need to make
-        println!("Repository: {}", repo_name);
+    for repo in repos {
+        println!("Repo: {}", repo.repository_name().unwrap_or_default());
     }
 
     Ok(())

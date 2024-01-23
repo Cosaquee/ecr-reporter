@@ -7,3 +7,4 @@ edition = "2021"
 aws-sdk-ecr = "1.10.0"
 aws-config = { version = "1.1.2", features = ["behavior-version-latest"] }
 tokio = { version = "1.35.1", features = ["full"] }
+aws-types = "1.1.3"
