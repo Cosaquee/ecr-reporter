@@ -1,8 +1,8 @@
-name: 'Publish'
+name: 'Publish Docker images'
 on:
-    push:
-      branches:
-        - main
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -22,6 +22,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: 'eu-west-1'
 
+      - name: "Set current date as env variable"
+        run: |
+          echo "builddate=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        id: version
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -32,8 +37,8 @@ jobs:
           ECR_REPOSITORY: debian
           IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-${{ steps.version.outputs.builddate }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-${{ steps.version.outputs.builddate }}
         working-directory: docker/debian
 
       - name: Build, tag, and push image to Amazon ECR
@@ -42,6 +47,6 @@ jobs:
           ECR_REPOSITORY: ubuntu
           IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-${{ steps.version.outputs.builddate }} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG-${{ steps.version.outputs.builddate }}
         working-directory: docker/ubuntu
