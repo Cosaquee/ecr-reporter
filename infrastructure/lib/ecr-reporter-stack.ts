@@ -9,14 +9,20 @@ export class EcrReporterStack extends cdk.Stack {
     new cdk.CfnResource(this, 'debian', {
       type: 'AWS::ECR::Repository',
       properties: {
-        RepositoryName: 'debian'
-      }
+        RepositoryName: 'debian',
+        imageScanningConfiguration: {
+          scanOnPush: true
+        }
+      },
     });
 
      new cdk.CfnResource(this, 'ubuntu', {
       type: 'AWS::ECR::Repository',
       properties: {
-        RepositoryName: 'ubuntu'
+        RepositoryName: 'ubuntu',
+        imageScanningConfiguration: {
+          scanOnPush: true
+        }
       }
     });
   }
