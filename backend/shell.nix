@@ -12,6 +12,7 @@ pkgs.mkShell {
     #bun
     #deno
     rustup
+    rust-analyzer
     #nodejs
     #nodePackages.pnpm
 
